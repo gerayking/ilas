@@ -6,6 +6,6 @@ type Teacher struct {
 }
 
 type Schedule struct {
-	ClassId int
-	Cla     *Class
+	ClassId int  //课程的唯一ID
+	Class   string  // class格式为 Day + starttime + endtime
 }

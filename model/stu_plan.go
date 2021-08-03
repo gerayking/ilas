@@ -8,5 +8,5 @@ type student struct {
 
 type plan struct {
 	Status bool //默认为false即可
-	Cla    []Class
+	Class    []string // class格式为 Day + starttime + endtime
 }
