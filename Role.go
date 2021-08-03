@@ -5,39 +5,39 @@ import (
 	"time"
 )
 
-type studentInfo struct {
+type StudentInfo struct {
 	gorm.Model
-	id         int
-	studentUid int64
-	name       string
-	sex        int8
-	birthday   time.Time
-	createTime time.Time
-	modifyTime time.Time
+	Id         int
+	StudentUid int64
+	Name       string
+	Sex        int8
+	Birthday   time.Time
+	CreateTime time.Time
+	ModifyTime time.Time
 }
-type teacherInfo struct {
+type SeacherInfo struct {
 	gorm.Model
-	id         int
-	teacherUid int64
-	name       string
-	sex        int8
-	createTime time.Time
-	modifyTime time.Time
-}
-
-type teacherSchedule struct {
-	id             int64
-	teacherUid     int64
-	teacherClassId int64
-	beginTime      time.Time
-	endTime        time.Time
+	Id         int
+	TeacherUid int64
+	Name       string
+	Sex        int8
+	CreateTime time.Time
+	ModifyTime time.Time
 }
 
-type studentSchedule struct {
+type TeacherSchedule struct {
+	Id             int64
+	TeacherUid     int64
+	TeacherClassId int64
+	BeginTime      time.Time
+	EndTime        time.Time
+}
+
+type StudentSchedule struct {
 	gorm.Model
-	id          int
-	studentUid  int64
-	timeSet     string
-	teacherList []int64
-	createTime  time.Time
+	Id          int
+	StudentUid  int64
+	TimeSet     string
+	TeacherList []int64
+	CreateTime  time.Time
 }

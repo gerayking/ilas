@@ -1,9 +1,9 @@
 package model
 
 type Student struct {
-	StuId    int
+	StuId    uint
 	Plans    []Plan
-	Teachers []int //备选老师的ID
+	Teachers []uint //备选老师的ID
 }
 
 type Plan struct {
