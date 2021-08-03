@@ -20,6 +20,8 @@ type teacherNode struct {
 	timeId    int
 }
 type graph struct {
-	head  [NODENUMBER]int
-	edges [EDGESNUMBER]edge
+	head       [NODENUMBER]int   // 邻接表的头节点
+	edges      [EDGESNUMBER]edge // 邻接表表示边
+	edgeNumber int               // 边的数量
+	nodeNumber int               // 点的数量
 }
