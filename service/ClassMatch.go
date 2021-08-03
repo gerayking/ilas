@@ -77,7 +77,7 @@ func dfs_to(v int, sonGraph list.List, vis []bool) {
 }
 
 // 进行dfs将图进行分割
-func tarjan(n int) list.List {
+func Tarjan(n int) list.List {
 	vis := []bool{}
 	graphdivident := list.List{}
 	sgraph := list.List{}
@@ -159,7 +159,6 @@ func dinic(u int, v int) int {
 }
 
 func addedge(u int, v int) {
-
 	g.Edges[g.EdgeNumber].W = 1
 	g.Edges[g.EdgeNumber].From = u
 	g.Edges[g.EdgeNumber].To = v
@@ -195,15 +194,15 @@ type Pair struct {
 	second int
 }
 
-func outputMatchInfo(g model.Graph) list.List {
+func OutputMatchInfo() list.List {
 	MatchInfo := list.List{}
-	for u := 0; u < g.NodeNumber; u++ {
-		// 如果边的源点是学生计划节点则不匹配
-		// 坑坑坑坑坑坑坑坑坑坑坑坑坑
+	for u := 0; u < g.NodeNumberOfTeacher; u++ {
 		for v := g.Head[u]; v != -1; v = g.Edges[v].Next {
 			// 如果边的源点是学生计划节点则不匹配
 			// 如果源点是老师放课节点且满流
-			// 坑坑坑坑坑坑坑坑坑坑坑坑坑
+			if v >= g.NodeNumberOfTeacher{
+				continue
+			}
 			if g.Edges[v].W == 0 {
 				MatchInfo.PushFront(Pair{u, v})
 			}

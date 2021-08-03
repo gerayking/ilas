@@ -65,7 +65,7 @@ func str2list (s string)[]uint{
 	return rl
 }
 func dealDataStu() []model.Student {
-	for i := 0; i < 100; i++ {
+	for i := 0; i < len(studentplan); i++ {
 		Student.StuId = uint(studentplan[i].StudentUid)
 		Student.Teachers = str2list(studentplan[i].TeacherList)
 		l1 := strings.Split(studentplan[i].TimeSet, "],")
@@ -101,17 +101,16 @@ func datetodhm(begin time.Time, end time.Time) string {
 }
 func dealDataTea() []model.TeacherSchedule {
 	mp := make(map[int64]model.TeacherSchedule)
-
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < len(teacherplan); i++ {
 		Teacher.TeacherId = teacherplan[i].TeacherUid
 		Teacher.Schedule =  append(Teacher.Schedule, datetodhm(time.Unix(teacherplan[i].BeginTime, 0), time.Unix(teacherplan[i].EndTime, 0)))
-		TeacherList = append(TeacherList,Teacher)
 		if _,ok := mp[teacherplan[i].TeacherUid];ok{
 			tmp := model.TeacherSchedule{TeacherId: teacherplan[i].TeacherUid,Schedule: append(mp[teacherplan[i].TeacherUid].Schedule,datetodhm(time.Unix(teacherplan[i].BeginTime, 0), time.Unix(teacherplan[i].EndTime, 0)))}
 			mp[teacherplan[i].TeacherUid] = tmp
 		}else{
 			mp[teacherplan[i].TeacherUid] = Teacher
 		}
+		Teacher = model.TeacherSchedule{}
 	}
 	TeacherList = TeacherList[0:0]
 	for _,v :=range mp{
@@ -120,10 +119,7 @@ func dealDataTea() []model.TeacherSchedule {
 	return TeacherList
 }
 
-func main() {
+func CreateData()([]model.Student,[]model.TeacherSchedule) {
 	readPlan()
-	dealDataStu()
-	v2 := dealDataTea()
-	fmt.Println(v2)
-
+	return dealDataStu(),dealDataTea()
 }

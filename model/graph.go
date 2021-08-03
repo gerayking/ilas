@@ -1,15 +1,5 @@
 package model
 
-//type studentNode struct {
-//	nodeId    int
-//	studentId int
-//	timeId    int
-//}
-//type teacherNode struct {
-//	nodeId    int
-//	teacherId int
-//	timeId    int
-//}
 type Edge struct {
 	From int // 图的源点
 	To   int // 图的终点
