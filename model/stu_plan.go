@@ -1,12 +1,12 @@
 package model
 
-type student struct {
+type Student struct {
 	StuId    int
-	Plans    []plan
+	Plans    []Plan
 	Teachers []int //备选老师的ID
 }
 
-type plan struct {
-	Status bool //默认为false即可
-	Class    []string // class格式为 Day + starttime + endtime
+type Plan struct {
+	Status bool     //默认为false即可
+	Class  []string // class格式为 Day + starttime + endtime
 }
