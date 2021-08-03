@@ -13,7 +13,7 @@ const inf = 999999999
 var g = global.Gragh
 
 func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
-	edges := make([]model.Edge, 0)
+	edges, head := make([]model.Edge, 0), make([]int, 0)
 	LenOfHead, LenOfEdge := 0, 0
 	for _, teacherSchedule := range teacher {
 		key := strconv.Itoa(int(teacherSchedule.TeacherId))
@@ -21,6 +21,7 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 			k := key + index
 			global.TeToIndex[k] = LenOfHead
 			global.IndexToTe[LenOfHead] = k
+			head = append(head, -1)
 			LenOfHead++
 		}
 	}
@@ -31,10 +32,10 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 			k := key + strconv.Itoa(index)
 			global.StuToIndex[k] = LenOfHead
 			global.IndexToStu[LenOfHead] = k
+			head = append(head, -1)
 			LenOfHead++
 		}
 	}
-	head := make([]int, LenOfHead)
 	for _, s := range stu {
 		key := strconv.Itoa(int(s.StuId))
 		for index, p := range s.Plans {
@@ -66,7 +67,6 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 	}
 	global.Gragh = &model.Graph{Head: head, Edges: edges, NodeNumber: LenOfHead, EdgeNumber: LenOfEdge, NodeNumberOfTeacher: nodeNumberOfTeacher}
 }
-
 
 // dfs分割
 func dfs_to(v int, sonGraph *list.List, vis []bool) {
