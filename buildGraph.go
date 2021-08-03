@@ -24,6 +24,8 @@ var studentplan []StudentSchedule
 var Plan model.Plan
 var Student model.Student
 var Teacher model.TeacherSchedule
+var TeacherList []model.TeacherSchedule
+var StudentList []model.Student
 
 //var Schedule model.Schedule
 var Plans []model.Plan
@@ -49,8 +51,23 @@ func str2List(s string) {
 	Plan.Class = res
 	Student.Plans = append(Student.Plans, Plan)
 }
-func dealDataStu() {
-	for i := 0; i < 200; i++ {
+func str2list (s string)[]uint{
+	s = s[1:len(s)-1]
+	sl := strings.Split(s,",")
+	for i :=0;i< len(sl);i++{
+		sl[i] = strings.Replace(sl[i]," ","",-1)
+	}
+	var rl []uint
+	for _,item := range sl{
+		number,_ := strconv.Atoi(item)
+		rl = append(rl, uint(number))
+	}
+	return rl
+}
+func dealDataStu() []model.Student {
+	for i := 0; i < 100; i++ {
+		Student.StuId = uint(studentplan[i].StudentUid)
+		Student.Teachers = str2list(studentplan[i].TeacherList)
 		l1 := strings.Split(studentplan[i].TimeSet, "],")
 		l1[0] = l1[0][3 : len(l1[0])-1]
 		str2List(l1[0])
@@ -62,15 +79,17 @@ func dealDataStu() {
 			l1[i] = l1[i][2 : len(l1[i])-1]
 			str2List(l1[i])
 		}
+		StudentList = append(StudentList, Student)
+		Student = model.Student{}
 	}
-
+	return StudentList
 }
 
 func enToNum(e string) int {
 	arr := []string{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"}
 	for index, item := range arr {
 		if item == e {
-			return index + 1
+			return index
 		}
 	}
 	return -1
@@ -80,18 +99,31 @@ func datetodhm(begin time.Time, end time.Time) string {
 	res += strconv.Itoa(enToNum(begin.Weekday().String())) + fmt.Sprintf("%02d", begin.Hour()) + fmt.Sprintf("%02d", begin.Minute()) + fmt.Sprintf("%02d", end.Hour()) + fmt.Sprintf("%02d", end.Minute())
 	return res
 }
-func dealDataTea() {
-	for i := 0; i < 10; i++ {
+func dealDataTea() []model.TeacherSchedule {
+	mp := make(map[int64]model.TeacherSchedule)
+
+	for i := 0; i < 1000; i++ {
 		Teacher.TeacherId = teacherplan[i].TeacherUid
-		//Schedule.ClassId = teacherplan[i].TeacherClassId
-		Schedule.Class = datetodhm(time.Unix(teacherplan[i].BeginTime, 0), time.Unix(teacherplan[i].EndTime, 0))
-		Teacher.Sch = append(Teacher.Sch, Schedule)
+		Teacher.Schedule =  append(Teacher.Schedule, datetodhm(time.Unix(teacherplan[i].BeginTime, 0), time.Unix(teacherplan[i].EndTime, 0)))
+		TeacherList = append(TeacherList,Teacher)
+		if _,ok := mp[teacherplan[i].TeacherUid];ok{
+			tmp := model.TeacherSchedule{TeacherId: teacherplan[i].TeacherUid,Schedule: append(mp[teacherplan[i].TeacherUid].Schedule,datetodhm(time.Unix(teacherplan[i].BeginTime, 0), time.Unix(teacherplan[i].EndTime, 0)))}
+			mp[teacherplan[i].TeacherUid] = tmp
+		}else{
+			mp[teacherplan[i].TeacherUid] = Teacher
+		}
 	}
+	TeacherList = TeacherList[0:0]
+	for _,v :=range mp{
+		TeacherList = append(TeacherList, v)
+	}
+	return TeacherList
 }
 
 func main() {
 	readPlan()
 	dealDataStu()
-	dealDataTea()
+	v2 := dealDataTea()
+	fmt.Println(v2)
 
 }

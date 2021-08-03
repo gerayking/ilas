@@ -16,7 +16,7 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 	edges := make([]model.Edge, 0)
 	LenOfHead, LenOfEdge := 0, 0
 	for _, teacherSchedule := range teacher {
-		key := strconv.Itoa(teacherSchedule.TeacherId)
+		key := strconv.Itoa(int(teacherSchedule.TeacherId))
 		for _, index := range teacherSchedule.Schedule {
 			key += index
 			global.TeToIndex[key] = LenOfHead
@@ -26,7 +26,7 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 	}
 	nodeNumberOfTeacher := LenOfHead
 	for _, s := range stu {
-		key := strconv.Itoa(s.StuId)
+		key := strconv.Itoa(int(s.StuId))
 		for index, _ := range s.Plans {
 			key += strconv.Itoa(index)
 			global.StuToIndex[key] = LenOfHead
@@ -36,12 +36,12 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 	}
 	head := make([]int, LenOfHead)
 	for _, s := range stu {
-		keyOfStu := strconv.Itoa(s.StuId)
+		keyOfStu := strconv.Itoa(int(s.StuId))
 		for index, p := range s.Plans {
 			keyOfStu += strconv.Itoa(index)
 			for _, c := range p.Class {
 				for _, t := range s.Teachers {
-					keyOfTeacher := strconv.Itoa(t)
+					keyOfTeacher := strconv.Itoa(int(t))
 					keyOfTeacher += c
 					from := global.StuToIndex[keyOfStu]
 					to, ok := global.TeToIndex[keyOfTeacher]

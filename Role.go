@@ -29,15 +29,18 @@ type TeacherSchedule struct {
 	Id             int64
 	TeacherUid     int64
 	TeacherClassId int64
-	BeginTime      time.Time
-	EndTime        time.Time
+	BeginTime      int64
+	EndTime        int64
 }
 
 type StudentSchedule struct {
-	gorm.Model
-	Id          int
+	Id          int `gorm:"primaryKey"`
 	StudentUid  int64
 	TimeSet     string
-	TeacherList []int64
+	TeacherList string
 	CreateTime  time.Time
+}
+
+func (StudentSchedule) TableName() string {
+	return "plan"
 }
