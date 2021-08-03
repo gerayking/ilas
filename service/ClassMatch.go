@@ -49,6 +49,9 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 						edges = append(edges, model.Edge{W: 1, From: from, To: to, Next: head[from]})
 						head[from] = LenOfEdge
 						LenOfEdge++
+						edges = append(edges, model.Edge{W: 0, From: to, To: from, Next: head[to]})
+						head[from] = LenOfEdge
+						LenOfEdge++
 					} else {
 						_, ok := global.VirtualNode[keyOfTeacher]
 						if !ok {
@@ -66,7 +69,7 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 
 
 // dfs分割
-func dfs_to(v int, sonGraph list.List, vis []bool) {
+func dfs_to(v int, sonGraph *list.List, vis []bool) {
 	sonGraph.PushBack(v)
 	for i := g.Head[v]; i != -1; i = g.Edges[i].Next {
 		t := g.Edges[i].To
@@ -79,12 +82,12 @@ func dfs_to(v int, sonGraph list.List, vis []bool) {
 
 // 进行dfs将图进行分割
 func Tarjan(n int) list.List {
-	vis := []bool{}
+	vis := make([]bool,n)
 	graphdivident := list.List{}
 	sgraph := list.List{}
 	for i := 0; i < n; i++ {
 		if vis[i] == false {
-			dfs_to(i, sgraph, vis)
+			dfs_to(i, &sgraph, vis)
 		}
 		graphdivident.PushBack(sgraph)
 		var next *list.Element
