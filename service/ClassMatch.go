@@ -18,9 +18,9 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 	for _, teacherSchedule := range teacher {
 		key := strconv.Itoa(int(teacherSchedule.TeacherId))
 		for _, index := range teacherSchedule.Schedule {
-			key += index
-			global.TeToIndex[key] = LenOfHead
-			global.IndexToTe[LenOfHead] = key
+			k := key + index
+			global.TeToIndex[k] = LenOfHead
+			global.IndexToTe[LenOfHead] = k
 			LenOfHead++
 		}
 	}
@@ -28,17 +28,17 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 	for _, s := range stu {
 		key := strconv.Itoa(int(s.StuId))
 		for index, _ := range s.Plans {
-			key += strconv.Itoa(index)
-			global.StuToIndex[key] = LenOfHead
-			global.IndexToStu[LenOfHead] = key
+			k := key + strconv.Itoa(index)
+			global.StuToIndex[k] = LenOfHead
+			global.IndexToStu[LenOfHead] = k
 			LenOfHead++
 		}
 	}
 	head := make([]int, LenOfHead)
 	for _, s := range stu {
-		keyOfStu := strconv.Itoa(int(s.StuId))
+		key := strconv.Itoa(int(s.StuId))
 		for index, p := range s.Plans {
-			keyOfStu += strconv.Itoa(index)
+			keyOfStu := key + strconv.Itoa(index)
 			for _, c := range p.Class {
 				for _, t := range s.Teachers {
 					keyOfTeacher := strconv.Itoa(int(t))
@@ -61,8 +61,9 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 			}
 		}
 	}
-	g = &model.Graph{Head: head, Edges: edges, NodeNumber: LenOfHead, EdgeNumber: LenOfEdge, NodeNumberOfTeacher: nodeNumberOfTeacher}
+	global.Gragh = &model.Graph{Head: head, Edges: edges, NodeNumber: LenOfHead, EdgeNumber: LenOfEdge, NodeNumberOfTeacher: nodeNumberOfTeacher}
 }
+
 
 // dfs分割
 func dfs_to(v int, sonGraph list.List, vis []bool) {
