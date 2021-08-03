@@ -4,13 +4,16 @@ import (
 	"awesomeProject/global"
 	"awesomeProject/model"
 	"awesomeProject/utils"
-	"container/list"
 	"strconv"
 )
 
 const inf = 999999999
 
-var g = global.Gragh
+var g = &model.Graph{}
+
+func Setg()  {
+	g = global.Gragh
+}
 
 func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 	edges, head := make([]model.Edge, 0), make([]int, 0)
@@ -22,6 +25,8 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 			global.TeToIndex[k] = LenOfHead
 			global.IndexToTe[LenOfHead] = k
 			head = append(head, -1)
+			head = append(head, -1)
+
 			LenOfHead++
 		}
 	}
@@ -33,6 +38,7 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 			global.StuToIndex[k] = LenOfHead
 			global.IndexToStu[LenOfHead] = k
 			head = append(head, -1)
+			head = append(head,-1)
 			LenOfHead++
 		}
 	}
@@ -51,7 +57,7 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 						head[from] = LenOfEdge
 						LenOfEdge++
 						edges = append(edges, model.Edge{W: 0, From: to, To: from, Next: head[to]})
-						head[from] = LenOfEdge
+						head[to] = LenOfEdge
 						LenOfEdge++
 					} else {
 						_, ok := global.VirtualNode[keyOfTeacher]
@@ -69,31 +75,27 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 }
 
 // dfs分割
-func dfs_to(v int, sonGraph *list.List, vis []bool) {
-	sonGraph.PushBack(v)
+func dfs_to(v int, sonGraph *[]int, vis []bool) {
+	vis[v]=true
+	*sonGraph = append(*sonGraph, v)
 	for i := g.Head[v]; i != -1; i = g.Edges[i].Next {
 		t := g.Edges[i].To
 		if !vis[t] {
 			dfs_to(t, sonGraph, vis)
 		}
-		sonGraph.Init()
 	}
 }
 
 // 进行dfs将图进行分割
-func Tarjan(n int) list.List {
+func Tarjan(n int) [][]int {
 	vis := make([]bool,n)
-	graphdivident := list.List{}
-	sgraph := list.List{}
+	graphdivident := [][]int{}
+	sgraph := make([]int, 0)
 	for i := 0; i < n; i++ {
 		if vis[i] == false {
 			dfs_to(i, &sgraph, vis)
-		}
-		graphdivident.PushBack(sgraph)
-		var next *list.Element
-		for e := sgraph.Front(); e != nil; e = next {
-			next = e.Next()
-			sgraph.Remove(e)
+			graphdivident = append(graphdivident, sgraph)
+			sgraph = make([]int, 0)
 		}
 	}
 	return graphdivident
@@ -111,8 +113,7 @@ func bfs(edges []model.Edge, deep []int, head []int, s int, t int) int {
 	for queue.Len() != 0 {
 		u := queue.Peek().(int)
 		queue.Pop()
-		i := 0
-		for i != -1 {
+		for i :=head[u] ; i!=-1;i=g.Edges[i].Next {
 			i = head[u]
 			if edges[i].W > 0 && deep[edges[i].To] == 0 {
 				deep[edges[i].To] = deep[edges[i].From] + 1
@@ -150,7 +151,7 @@ func dfs(edges []model.Edge, head []int, deep []int, u int, t int, dist int) int
 // dinic 计算最大流
 func dinic(u int, v int) int {
 	ans := 0
-	var deep []int
+	deep :=  make([]int,g.NodeNumber)
 	// 对残流图不断进行分层
 	for bfs(g.Edges, deep, g.Head, u, v) != 0 {
 		// 分层后寻找增广路
@@ -162,44 +163,49 @@ func dinic(u int, v int) int {
 	return ans
 }
 
-func addedge(u int, v int) {
-	g.Edges[g.EdgeNumber].W = 1
-	g.Edges[g.EdgeNumber].From = u
-	g.Edges[g.EdgeNumber].To = v
-	g.Edges[g.EdgeNumber].Next = g.Head[u]
+func addedge(u int, v int,w int) {
+	g.Edges = append(g.Edges,model.Edge{W: w,From: u,To: v,Next: g.Head[u]})
 	g.EdgeNumber++
 }
 
-func Match(multiGraph list.List, n int) {
+func Match(multiGraph [][]int, n int) {
 	superOriginNode := n
 	superConvergeNode := superOriginNode + 1
-	OriginNodeList := list.List{}
-	for item := multiGraph.Front(); item != nil; item = item.Next() {
-		// 如果节点是老师+时间，连接上源点
-		if true {
-			addedge(superOriginNode, item.Value.(int))
-		} else {
-			addedge(item.Value.(int), superConvergeNode)
+	OriginNodeList := []int{}
+	for i := 0; i < len(multiGraph); i++ {
+		// 如果节点是学生+时间，连接上源点
+		if len(multiGraph[i])<2 {
+			continue
 		}
-		OriginNodeList.PushFront(superOriginNode)
+		for j:=0;j<len(multiGraph[i]);j++{
+			if multiGraph[i][j]< g.NodeNumberOfTeacher {
+				 u := multiGraph[i][j]
+				 addedge(u,superOriginNode,1)
+				 addedge(superOriginNode,u,0)
+			}else{
+				u := multiGraph[i][j]
+				addedge(u,superConvergeNode,1)
+				addedge(superConvergeNode,u,0)
+			}
+		}
+		OriginNodeList = append(OriginNodeList, superOriginNode)
+		g.NodeNumber+=2
 		superOriginNode += 2
 		superConvergeNode += 2
 		// 如果节点是学生+第几节课，连接上汇点
 	}
-	for item := OriginNodeList.Front(); item != nil; item = item.Next() {
-		superOriginNode := item.Value.(int)
-		superConvergeNode := superOriginNode + 1
-		dinic(superOriginNode, superConvergeNode)
+	for _,item := range OriginNodeList{
+		dinic(item, item+1)
 	}
 }
 
 type Pair struct {
-	first  int
-	second int
+	First  int
+	Second int
 }
 
-func OutputMatchInfo() list.List {
-	MatchInfo := list.List{}
+func OutputMatchInfo() []Pair {
+	MatchInfo := make([]Pair,0)
 	for u := 0; u < g.NodeNumberOfTeacher; u++ {
 		for v := g.Head[u]; v != -1; v = g.Edges[v].Next {
 			// 如果边的源点是学生计划节点则不匹配
@@ -208,7 +214,7 @@ func OutputMatchInfo() list.List {
 				continue
 			}
 			if g.Edges[v].W == 0 {
-				MatchInfo.PushFront(Pair{u, v})
+				MatchInfo = append(MatchInfo, Pair{u,v})
 			}
 		}
 	}
