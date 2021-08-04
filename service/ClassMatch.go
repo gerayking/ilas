@@ -200,13 +200,14 @@ func Match(multiGraph [][]int, n int) {
 		superConvergeNode += 2
 		// 如果节点是学生+第几节课，连接上汇点
 	}
-	channal := make(chan int, len(OriginNodeList))
+	channel := make(chan int, len(OriginNodeList))
 	for _, item := range OriginNodeList {
-		go dinic(item, item+1, channal)
+		go dinic(item, item+1, channel)
 	}
 	for i := 0; i < len(OriginNodeList); i++ {
-		<-channal
+		<-channel
 	}
+	defer close(channel)
 }
 
 //func MatchPlan2() {
