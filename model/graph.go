@@ -8,9 +8,9 @@ type Edge struct {
 }
 
 type Graph struct {
-	Head                []int  // 邻接表的头节点
-	Edges               []Edge // 邻接表表示边
-	EdgeNumber          int    // 边的数量
-	NodeNumber          int    // 点的数量
-	NodeNumberOfTeacher int
+	Head            []int  // 邻接表的头节点
+	Edges           []Edge // 邻接表表示边
+	EdgeNumber      int    // 边的数量
+	NodeNumber      int    // 点的数量
+	NodeNumberOfStu int
 }
