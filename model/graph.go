@@ -8,10 +8,15 @@ type Edge struct {
 }
 
 type Graph struct {
-	Head                []int  // 邻接表的头节点
-	Edges               []Edge // 邻接表表示边
-	EdgeNumber          int    // 边的数量
-	NodeNumber          int    // 点的数量
-	NodeNumberOfStu	    int    // 左部图和右部图的边界
-	InitNumberOfNOde 	int    // 未添加超级源点和超级汇点前的节点数量
+	Head             []int  // 邻接表的头节点
+	Edges            []Edge // 邻接表表示边
+	EdgeNumber       int    // 边的数量
+	NodeNumber       int    // 点的数量
+	NodeNumberOfStu  int    // 左部图和右部图的边界
+	InitNumberOfNOde int    // 未添加超级源点和超级汇点前的节点数量
+}
+
+type TmpNode struct {
+	TeacherId string
+	LessonId  []int
 }

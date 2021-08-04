@@ -8,11 +8,6 @@ import (
 	"strconv"
 )
 
-type TmpNode struct {
-	TeacherId string
-	LessonId  []int
-}
-
 func RebuildGraph(stu []model.Student) {
 	for _, s := range stu {
 		key := strconv.Itoa(int(s.StuId))
@@ -41,9 +36,9 @@ func RebuildGraph(stu []model.Student) {
 			}
 		}
 	}
-	VirtualNodeList := make([]TmpNode, 0)
+	VirtualNodeList := make([]model.TmpNode, 0)
 	for k, v := range global.VirtualNode {
-		VirtualNodeList = append(VirtualNodeList, TmpNode{TeacherId: k, LessonId: v})
+		VirtualNodeList = append(VirtualNodeList, model.TmpNode{TeacherId: k, LessonId: v})
 	}
 	sort.SliceStable(VirtualNodeList, func(i, j int) bool {
 		return len(VirtualNodeList[i].LessonId) > len(VirtualNodeList[j].LessonId)
@@ -55,8 +50,8 @@ func RebuildGraph(stu []model.Student) {
 		global.Gragh.Head = append(global.Gragh.Head, []int{-1, -1}...)
 		u := global.Gragh.NodeNumber
 		for _, item := range VirtualNodeList[i].LessonId {
-			addedge(item, u, 1)
-			addedge(u, item, 0)
+			utils.Addedge(item, u, 1)
+			utils.Addedge(u, item, 0)
 		}
 		global.Gragh.NodeNumber++
 	}

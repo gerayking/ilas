@@ -1,4 +1,4 @@
-package main
+package service
 
 import (
 	"awesomeProject/model"
@@ -7,24 +7,21 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
-	"math"
 	"strconv"
 	"strings"
 	"time"
 )
 
-const inf = math.MaxInt32
-
-var teacherplan []TeacherSchedule
-var studentplan []StudentSchedule
+var teacherplan []model.TeacherSchedule
+var studentplan []model.StudentSchedule
 
 //var studentInfo []StudentInfo
 //var teacherInfo []TeacherInfo
 
 var Plan model.Plan
 var Student model.Student
-var Teacher model.TeacherSchedule
-var TeacherList []model.TeacherSchedule
+var Teacher model.TeacherPlan
+var TeacherList []model.TeacherPlan
 var StudentList []model.Student
 
 //var Schedule model.Schedule
@@ -42,7 +39,6 @@ func readPlan() {
 	db.Find(&teacherplan)
 	//db.Find(&studentplan)
 	//db.Find(&teacherplan)
-
 }
 func str2List(s string) {
 	res := strings.Split(s, ",")
@@ -97,23 +93,23 @@ func enToNum(e string) int {
 	}
 	return -1
 }
-func datetodhm(begin time.Time, end time.Time) string {
+func Datetodhm(begin time.Time, end time.Time) string {
 	res := ""
-	res += strconv.Itoa(enToNum(begin.Weekday().String())) + fmt.Sprintf("%d", begin.Hour()) + fmt.Sprintf("%02d", begin.Minute()) + fmt.Sprintf("%02d", end.Hour()) + fmt.Sprintf("%02d", end.Minute())
+	res += strconv.Itoa(enToNum(begin.Weekday().String())) + fmt.Sprintf("%d", begin.Hour()) + fmt.Sprintf("%02d", begin.Minute()) + fmt.Sprintf("%d", end.Hour()) + fmt.Sprintf("%02d", end.Minute())
 	return res
 }
-func dealDataTea() []model.TeacherSchedule {
-	mp := make(map[int64]model.TeacherSchedule)
+func dealDataTea() []model.TeacherPlan {
+	mp := make(map[int64]model.TeacherPlan)
 	for i := 0; i < len(teacherplan); i++ {
 		Teacher.TeacherId = teacherplan[i].TeacherUid
-		Teacher.Schedule = append(Teacher.Schedule, datetodhm(time.Unix(teacherplan[i].BeginTime, 0), time.Unix(teacherplan[i].EndTime, 0)))
+		Teacher.Schedule = append(Teacher.Schedule, Datetodhm(time.Unix(teacherplan[i].BeginTime, 0), time.Unix(teacherplan[i].EndTime, 0)))
 		if _, ok := mp[teacherplan[i].TeacherUid]; ok {
-			tmp := model.TeacherSchedule{TeacherId: teacherplan[i].TeacherUid, Schedule: append(mp[teacherplan[i].TeacherUid].Schedule, datetodhm(time.Unix(teacherplan[i].BeginTime, 0), time.Unix(teacherplan[i].EndTime, 0)))}
+			tmp := model.TeacherPlan{TeacherId: teacherplan[i].TeacherUid, Schedule: append(mp[teacherplan[i].TeacherUid].Schedule, Datetodhm(time.Unix(teacherplan[i].BeginTime, 0), time.Unix(teacherplan[i].EndTime, 0)))}
 			mp[teacherplan[i].TeacherUid] = tmp
 		} else {
 			mp[teacherplan[i].TeacherUid] = Teacher
 		}
-		Teacher = model.TeacherSchedule{}
+		Teacher = model.TeacherPlan{}
 	}
 	TeacherList = TeacherList[0:0]
 	for _, v := range mp {
@@ -122,7 +118,7 @@ func dealDataTea() []model.TeacherSchedule {
 	return TeacherList
 }
 
-func CreateData() ([]model.Student, []model.TeacherSchedule) {
+func CreateData() ([]model.Student, []model.TeacherPlan) {
 	readPlan()
 	return dealDataStu(), dealDataTea()
 }

@@ -10,3 +10,7 @@ var StuToTe = make(map[string][]uint)
 var InitNumberOfNOde int
 var InDegree []int
 var InFirstMatch []bool
+var ReceiveChanel = make(chan model.TeacherPlan)
+var RequestChanel = make(chan model.TeacherPlan)
+var RemainStudentPlan []model.Student
+var RemainTeacherPlan []model.TeacherPlan

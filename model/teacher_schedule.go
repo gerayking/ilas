@@ -1,6 +1,6 @@
 package model
 
-type TeacherSchedule struct {
+type TeacherPlan struct {
 	TeacherId int64
 	Schedule  []string // 这里存放class  class格式为 Day + starttime + endtime
 }

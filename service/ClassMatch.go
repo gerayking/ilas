@@ -12,7 +12,9 @@ import (
 
 const inf = 999999999
 
-func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
+var MatchI []Pair
+
+func CreateGraph(stu []model.Student, teacher []model.TeacherPlan) {
 	edges, head := make([]model.Edge, 0), make([]int, 0)
 	LenOfHead, LenOfEdge := 0, 0
 	for _, s := range stu {
@@ -91,9 +93,6 @@ func Tarjan(n int) [][]int {
 	}
 	return graphdivident
 }
-func CreateSuperNode(n int) {
-
-}
 
 // dinic算法分层
 func bfs(edges []model.Edge, deep []int, head []int, s int, t int, qu *[]int) int {
@@ -147,7 +146,6 @@ func dfs(edges []model.Edge, head []int, deep []int, vis []bool, u int, t int, d
 
 // dinic 计算最大流
 func dinic(u int, v int, group *sync.WaitGroup) int {
-
 	ans := 0
 	deep := make([]int, 2*global.Gragh.NodeNumber)
 	vis := make([]bool, 2*global.Gragh.NodeNumber)
@@ -159,19 +157,11 @@ func dinic(u int, v int, group *sync.WaitGroup) int {
 		if minflow != 0 {
 			ans += minflow
 		}
-		for _, item := range qu {
-			deep[item] = 0
-		}
+		deep = make([]int, 2*global.Gragh.NodeNumber)
 		qu = make([]int, 0)
 	}
-	group.Done()git
+	//group.Done()
 	return ans
-}
-
-func addedge(u int, v int, w int) {
-	global.Gragh.Edges = append(global.Gragh.Edges, model.Edge{W: w, From: u, To: v, Next: global.Gragh.Head[u]})
-	global.Gragh.Head[u] = global.Gragh.EdgeNumber
-	global.Gragh.EdgeNumber++
 }
 
 func Match(multiGraph [][]int, n int) {
@@ -189,12 +179,12 @@ func Match(multiGraph [][]int, n int) {
 			if multiGraph[i][j] < global.Gragh.NodeNumberOfStu {
 				u := multiGraph[i][j]
 				//fmt.Printf("%d -> %d||\n",superOriginNode,u)
-				addedge(superOriginNode, u, 1)
-				addedge(u, superOriginNode, 0)
+				utils.Addedge(superOriginNode, u, 1)
+				utils.Addedge(u, superOriginNode, 0)
 			} else {
 				u := multiGraph[i][j]
-				addedge(u, superConvergeNode, 1)
-				addedge(superConvergeNode, u, 0)
+				utils.Addedge(u, superConvergeNode, 1)
+				utils.Addedge(superConvergeNode, u, 0)
 			}
 		}
 		Max = int(math.Max(float64(Max), float64(len(multiGraph[i]))))
@@ -206,27 +196,39 @@ func Match(multiGraph [][]int, n int) {
 	}
 	var wg sync.WaitGroup
 	for _, item := range OriginNodeList {
-		wg.Add(1)
+		//wg.Add(1)
 		dinic(item, item+1, &wg)
 	}
-	wg.Wait()
+	//wg.Wait()
 }
 
-//func MatchPlan2() {
-//	superOriginNode := global.Gragh.NodeNumber
-//	superConvergeNode := superOriginNode + 1
-//	for i := 0; i < global.Gragh.NodeNumber; i++ {
-//		if i < global.Gragh.NodeNumberOfStu {
-//			addedge(superOriginNode, i, 1)
-//			addedge(i, superOriginNode, 0)
-//		} else {
-//			addedge(i, superConvergeNode, 1)
-//			addedge(superOriginNode, i, 0)
-//		}
-//	}
-//	sum := dinic(superOriginNode, superConvergeNode)
-//	fmt.Println(sum)
-//}
+func MatchPlan2(multiGraph [][]int, n int) {
+	MatchInfo := make([]Pair, 0)
+	superOriginNode := n
+	superConvergeNode := n + 1
+	for i := 0; i < len(multiGraph); i++ {
+		if len(multiGraph[i]) <= 2 {
+			if len(multiGraph[i]) == 2 {
+				MatchInfo = append(MatchInfo, Pair{First: multiGraph[i][0], Second: multiGraph[i][1]})
+			} else {
+				continue
+			}
+		}
+		for j := 0; j < len(multiGraph[i]); j++ {
+			u := multiGraph[i][j]
+			if u < global.Gragh.NodeNumberOfStu {
+				utils.Addedge(superOriginNode, u, 1)
+				utils.Addedge(u, superOriginNode, 0)
+			} else {
+				utils.Addedge(u, superConvergeNode, 1)
+				utils.Addedge(superConvergeNode, u, 0)
+			}
+		}
+	}
+	MatchI = MatchInfo
+	var wg sync.WaitGroup
+	dinic(superOriginNode, superConvergeNode, &wg)
+}
 
 type Pair struct {
 	First  int
@@ -254,7 +256,7 @@ func IsMatch(p *Pair) bool {
 }
 
 func OutputMatchInfo() []Pair {
-	MatchInfo := make([]Pair, 0)
+	MatchInfo := MatchI
 	global.InFirstMatch = make([]bool, global.Gragh.NodeNumber)
 	for u := 0; u < global.Gragh.NodeNumberOfStu; u++ {
 		for i := global.Gragh.Head[u]; i != -1; i = global.Gragh.Edges[i].Next {

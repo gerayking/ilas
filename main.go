@@ -4,67 +4,66 @@ import (
 	"awesomeProject/global"
 	"awesomeProject/model"
 	"awesomeProject/service"
-	"fmt"
-	"time"
+	"strconv"
+	"strings"
 )
 
-func FirstMatch(sp []model.Student, tp []model.TeacherSchedule) []service.Pair {
-
+func FirstMatch(sp []model.Student, tp []model.TeacherPlan) []service.Pair {
 	service.CreateGraph(sp, tp)
 	sonGraph := service.Tarjan(global.Gragh.NodeNumber)
 	service.Match(sonGraph, global.Gragh.NodeNumber)
-	//service.MatchPlan2()
 	ans := service.OutputMatchInfo()
 	return ans
 
 }
-func SecondMatch(sp []model.Student, tp []model.TeacherSchedule) []service.Pair {
+func SecondMatch(sp []model.Student, tp []model.TeacherPlan) []service.Pair {
 	service.CreateGraph(sp, tp)
 	service.RebuildGraph(sp)
 	sonGraph := service.Tarjan(global.Gragh.NodeNumber)
 	service.Match(sonGraph, global.Gragh.NodeNumber)
 	return service.OutputMatchInfo()
 }
-
-func testifyData(ans []service.Pair) {
-	trueNumber := 0
-	confilictNumber := 0
-	mps := make(map[string]int)
-	mpt := make(map[string]int)
+func getRemainGraph(ans []service.Pair) ([]model.Student, []model.TeacherPlan) {
 	for i := 0; i < len(ans); i++ {
 		u := ans[i].First
 		v := ans[i].Second
 		s := global.IndexToStu[u]
 		t := global.IndexToTe[v]
-		if _, ok := mps[s]; ok && mps[s] == 1 {
-			confilictNumber++
-		} else {
-			mps[s] = 1
-		}
-		if _, ok := mps[t]; ok && mpt[t] == 1 {
-			confilictNumber++
-		} else {
-			mpt[t] = 1
-		}
-		flag := service.IsMatch(&ans[i])
-		if flag {
-			trueNumber++
-		}
-
+		delete(global.IndexToStu, u)
+		delete(global.IndexToTe, v)
+		delete(global.StuToIndex, s)
+		delete(global.TeToIndex, t)
 	}
-	fmt.Printf("Match number : %d\n", len(ans))
-	fmt.Printf("success Match Number : %d\n", trueNumber)
-	fmt.Printf("error number : %d\n", confilictNumber)
+	global.Gragh = &model.Graph{}
+	studentPlan := make([]model.Student, 0)
+	teacherPlan := make([]model.TeacherPlan, 0)
+	for _, item := range global.StuToIndex {
+		if global.InFirstMatch[item] == false {
+			Sid := global.IndexToStu[item]
+			id, _ := strconv.ParseInt(strings.Split(Sid, "_")[0], 0, 0)
+			student := model.Student{StuId: uint(id), Plans: global.StuToPlan[global.IndexToStu[item]], Teachers: global.StuToTe[global.IndexToStu[item]]}
+			studentPlan = append(studentPlan, student)
+		}
+	}
+	for _, item := range global.TeToIndex {
+		if global.InFirstMatch[item] == false {
+			ts := strings.Split(global.IndexToTe[item], "_")
+			teacherId, _ := strconv.ParseInt(ts[0], 0, 0)
+			teacherPlan = append(teacherPlan, model.TeacherPlan{TeacherId: teacherId, Schedule: []string{ts[1]}})
+		}
+	}
+	return studentPlan, teacherPlan
 }
 func main() {
-	start := time.Now()
-	sp, tp := CreateData()
-	ans := FirstMatch(sp, tp)
-	end := time.Since(start)
-	fmt.Println(end)
-	testifyData(ans)
-	ans = SecondMatch(sp, tp)
-	testifyData(ans)
-	end = time.Since(start)
-	fmt.Println(end)
+	//start := time.Now()
+	sp, tp := service.CreateData()
+	FirstMatch(sp, tp)
+	ans := SecondMatch(sp, tp)
+	global.RemainStudentPlan, global.RemainTeacherPlan = getRemainGraph(ans)
+	//end := time.Since(start)
+	//fmt.Println(end)
+	//testifyData(ans)
+	//testifyData(ans)
+	//end = time.Since(start)
+	//fmt.Println(end)
 }
