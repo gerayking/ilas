@@ -38,8 +38,8 @@ func readPlan() {
 			SingularTable: true,
 		},
 	})
-	db.Find(&studentplan)
-	db.Find(&teacherplan)
+	db.Limit(500).Find(&studentplan)
+	db.Limit(500).Find(&teacherplan)
 
 }
 func str2List(s string) {
@@ -51,15 +51,15 @@ func str2List(s string) {
 	Plan.Class = res
 	Student.Plans = append(Student.Plans, Plan)
 }
-func str2list (s string)[]uint{
-	s = s[1:len(s)-1]
-	sl := strings.Split(s,",")
-	for i :=0;i< len(sl);i++{
-		sl[i] = strings.Replace(sl[i]," ","",-1)
+func str2list(s string) []uint {
+	s = s[1 : len(s)-1]
+	sl := strings.Split(s, ",")
+	for i := 0; i < len(sl); i++ {
+		sl[i] = strings.Replace(sl[i], " ", "", -1)
 	}
 	var rl []uint
-	for _,item := range sl{
-		number,_ := strconv.Atoi(item)
+	for _, item := range sl {
+		number, _ := strconv.Atoi(item)
 		rl = append(rl, uint(number))
 	}
 	return rl
@@ -103,23 +103,23 @@ func dealDataTea() []model.TeacherSchedule {
 	mp := make(map[int64]model.TeacherSchedule)
 	for i := 0; i < len(teacherplan); i++ {
 		Teacher.TeacherId = teacherplan[i].TeacherUid
-		Teacher.Schedule =  append(Teacher.Schedule, datetodhm(time.Unix(teacherplan[i].BeginTime, 0), time.Unix(teacherplan[i].EndTime, 0)))
-		if _,ok := mp[teacherplan[i].TeacherUid];ok{
-			tmp := model.TeacherSchedule{TeacherId: teacherplan[i].TeacherUid,Schedule: append(mp[teacherplan[i].TeacherUid].Schedule,datetodhm(time.Unix(teacherplan[i].BeginTime, 0), time.Unix(teacherplan[i].EndTime, 0)))}
+		Teacher.Schedule = append(Teacher.Schedule, datetodhm(time.Unix(teacherplan[i].BeginTime, 0), time.Unix(teacherplan[i].EndTime, 0)))
+		if _, ok := mp[teacherplan[i].TeacherUid]; ok {
+			tmp := model.TeacherSchedule{TeacherId: teacherplan[i].TeacherUid, Schedule: append(mp[teacherplan[i].TeacherUid].Schedule, datetodhm(time.Unix(teacherplan[i].BeginTime, 0), time.Unix(teacherplan[i].EndTime, 0)))}
 			mp[teacherplan[i].TeacherUid] = tmp
-		}else{
+		} else {
 			mp[teacherplan[i].TeacherUid] = Teacher
 		}
 		Teacher = model.TeacherSchedule{}
 	}
 	TeacherList = TeacherList[0:0]
-	for _,v :=range mp{
+	for _, v := range mp {
 		TeacherList = append(TeacherList, v)
 	}
 	return TeacherList
 }
 
-func CreateData()([]model.Student,[]model.TeacherSchedule) {
+func CreateData() ([]model.Student, []model.TeacherSchedule) {
 	readPlan()
-	return dealDataStu(),dealDataTea()
+	return dealDataStu(), dealDataTea()
 }
