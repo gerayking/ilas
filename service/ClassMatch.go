@@ -4,8 +4,10 @@ import (
 	"awesomeProject/global"
 	"awesomeProject/model"
 	"awesomeProject/utils"
+	"math"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 const inf = 999999999
@@ -144,7 +146,7 @@ func dfs(edges []model.Edge, head []int, deep []int, vis []bool, u int, t int, d
 }
 
 // dinic 计算最大流
-func dinic(u int, v int) int {
+func dinic(u int, v int, group *sync.WaitGroup) int {
 
 	ans := 0
 	deep := make([]int, 2*global.Gragh.NodeNumber)
@@ -162,6 +164,7 @@ func dinic(u int, v int) int {
 		}
 		qu = make([]int, 0)
 	}
+	group.Done()git
 	return ans
 }
 
@@ -172,6 +175,7 @@ func addedge(u int, v int, w int) {
 }
 
 func Match(multiGraph [][]int, n int) {
+	Max := 0
 	global.Gragh.InitNumberOfNOde = global.Gragh.NodeNumber
 	superOriginNode := n
 	superConvergeNode := superOriginNode + 1
@@ -193,20 +197,19 @@ func Match(multiGraph [][]int, n int) {
 				addedge(superConvergeNode, u, 0)
 			}
 		}
+		Max = int(math.Max(float64(Max), float64(len(multiGraph[i]))))
 		OriginNodeList = append(OriginNodeList, superOriginNode)
 		global.Gragh.NodeNumber += 2
 		superOriginNode += 2
 		superConvergeNode += 2
 		// 如果节点是学生+第几节课，连接上汇点
 	}
-	//channel := make(chan int, len(OriginNodeList))
+	var wg sync.WaitGroup
 	for _, item := range OriginNodeList {
-		dinic(item, item+1)
+		wg.Add(1)
+		dinic(item, item+1, &wg)
 	}
-	//for i := 0; i < len(OriginNodeList); i++ {
-	//	<-channel
-	//}
-	//defer close(channel)
+	wg.Wait()
 }
 
 //func MatchPlan2() {
