@@ -38,8 +38,8 @@ func readPlan() {
 			SingularTable: true,
 		},
 	})
-	db.Limit(500).Find(&studentplan)
-	db.Limit(500).Find(&teacherplan)
+	db.Find(&studentplan)
+	db.Find(&teacherplan)
 
 }
 func str2List(s string) {
@@ -96,7 +96,7 @@ func enToNum(e string) int {
 }
 func datetodhm(begin time.Time, end time.Time) string {
 	res := ""
-	res += strconv.Itoa(enToNum(begin.Weekday().String())) + fmt.Sprintf("%02d", begin.Hour()) + fmt.Sprintf("%02d", begin.Minute()) + fmt.Sprintf("%02d", end.Hour()) + fmt.Sprintf("%02d", end.Minute())
+	res += strconv.Itoa(enToNum(begin.Weekday().String())) + fmt.Sprintf("%d", begin.Hour()) + fmt.Sprintf("%02d", begin.Minute()) + fmt.Sprintf("%02d", end.Hour()) + fmt.Sprintf("%02d", end.Minute())
 	return res
 }
 func dealDataTea() []model.TeacherSchedule {

@@ -16,6 +16,7 @@ func main() {
 	service.Match(sonGraph,global.Gragh.NodeNumber)
 	ans := service.OutputMatchInfo()
 
+
 	for i:=0;i< len(ans);i++{
 		u := ans[i].First
 		v := ans[i].Second
@@ -26,6 +27,7 @@ func main() {
 
 
 	}
+	fmt.Println(len(ans))
 	end := time.Since(start)
 	fmt.Println(end)
 }

@@ -26,7 +26,6 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 			global.IndexToTe[LenOfHead] = k
 			head = append(head, -1)
 			head = append(head, -1)
-
 			LenOfHead++
 		}
 	}
@@ -59,13 +58,6 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 						edges = append(edges, model.Edge{W: 0, From: to, To: from, Next: head[to]})
 						head[to] = LenOfEdge
 						LenOfEdge++
-					} else {
-						_, ok := global.VirtualNode[keyOfTeacher]
-						if !ok {
-							global.VirtualNode[keyOfTeacher] = len(global.InDegree)
-							global.InDegree = append(global.InDegree, 1)
-						}
-						global.InDegree[global.VirtualNode[keyOfTeacher]]++
 					}
 				}
 			}
@@ -181,7 +173,7 @@ func addedge(u int, v int,w int) {
 }
 
 func Match(multiGraph [][]int, n int) {
-	global.InitNumberOfNOde = global.Gragh.NodeNumber
+	global.Gragh.InitNumberOfNOde = global.Gragh.NodeNumber
 	superOriginNode := n
 	superConvergeNode := superOriginNode + 1
 	OriginNodeList := []int{}
@@ -210,7 +202,7 @@ func Match(multiGraph [][]int, n int) {
 		// 如果节点是学生+第几节课，连接上汇点
 	}
 	for _,item := range OriginNodeList{
-		 dinic(item, item+1)
+		go dinic(item, item+1)
 	}
 }
 
@@ -221,13 +213,15 @@ type Pair struct {
 
 func OutputMatchInfo() []Pair {
 	MatchInfo := make([]Pair,0)
+	global.InFirstMatch = make([]bool, global.Gragh.InitNumberOfNOde)
 	for u := 0; u < g.NodeNumberOfTeacher; u++ {
 		for i := g.Head[u]; i != -1; i = g.Edges[i].Next {
-			//v := g.Edges[i].To
 			// 如果边的源点是学生计划节点则不匹配
 			// 如果源点是老师放课节点且满流
-			if g.Edges[i].W == 0 && g.Edges[i].From < g.NodeNumberOfTeacher && g.Edges[i].To < global.InitNumberOfNOde{
+			if g.Edges[i].W == 0 && g.Edges[i].From < g.NodeNumberOfTeacher && g.Edges[i].To < global.Gragh.InitNumberOfNOde{
 				MatchInfo = append(MatchInfo, Pair{g.Edges[i].From,g.Edges[i].To})
+				global.InFirstMatch[g.Edges[i].From] = true
+				global.InFirstMatch[g.Edges[i].To] = true
 			}
 		}
 	}
