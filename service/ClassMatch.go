@@ -4,7 +4,9 @@ import (
 	"awesomeProject/global"
 	"awesomeProject/model"
 	"awesomeProject/utils"
+	"fmt"
 	"strconv"
+	"strings"
 )
 
 const inf = 999999999
@@ -20,6 +22,8 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 	LenOfHead, LenOfEdge := 0, 0
 	for _, s := range stu {
 		key := strconv.Itoa(int(s.StuId))
+		global.StuToPlan[key] = s.Plans
+		global.StuToTe[key] = s.Teachers
 		for index, _ := range s.Plans {
 			k := key + "_" + strconv.Itoa(index)
 			global.StuToIndex[k] = LenOfHead
@@ -217,6 +221,26 @@ func Match(multiGraph [][]int, n int) {
 type Pair struct {
 	First  int
 	Second int
+}
+
+func IsMatch(p *Pair) bool {
+	stu := strings.Split(global.IndexToStu[p.First], "_")
+	te := strings.Split(global.IndexToTe[p.Second], "_")
+	i, _ := strconv.ParseInt(stu[1], 0, 0)
+	flag := false
+	for _, plan := range global.StuToPlan[stu[0]][i].Class {
+		if strings.EqualFold(plan, te[1]) {
+			flag = true
+		}
+	}
+	if flag {
+		for _, teacher := range global.StuToTe[stu[0]] {
+			if strings.EqualFold(te[0], strconv.Itoa(int(teacher))) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func OutputMatchInfo() []Pair {
