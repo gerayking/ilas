@@ -9,6 +9,7 @@ import (
 )
 
 func FirstMatch(sp []model.Student, tp []model.TeacherSchedule) []service.Pair {
+
 	service.CreateGraph(sp, tp)
 	sonGraph := service.Tarjan(global.Gragh.NodeNumber)
 	service.Match(sonGraph, global.Gragh.NodeNumber)
@@ -59,9 +60,11 @@ func main() {
 	start := time.Now()
 	sp, tp := CreateData()
 	ans := FirstMatch(sp, tp)
+	end := time.Since(start)
+	fmt.Println(end)
 	testifyData(ans)
 	ans = SecondMatch(sp, tp)
 	testifyData(ans)
-	end := time.Since(start)
+	end = time.Since(start)
 	fmt.Println(end)
 }

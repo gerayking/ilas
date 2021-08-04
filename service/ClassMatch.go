@@ -144,7 +144,7 @@ func dfs(edges []model.Edge, head []int, deep []int, vis []bool, u int, t int, d
 }
 
 // dinic 计算最大流
-func dinic(u int, v int, c chan int) int {
+func dinic(u int, v int) int {
 
 	ans := 0
 	deep := make([]int, 2*global.Gragh.NodeNumber)
@@ -162,7 +162,6 @@ func dinic(u int, v int, c chan int) int {
 		}
 		qu = make([]int, 0)
 	}
-	c <- 1
 	return ans
 }
 
@@ -200,14 +199,14 @@ func Match(multiGraph [][]int, n int) {
 		superConvergeNode += 2
 		// 如果节点是学生+第几节课，连接上汇点
 	}
-	channel := make(chan int, len(OriginNodeList))
+	//channel := make(chan int, len(OriginNodeList))
 	for _, item := range OriginNodeList {
-		go dinic(item, item+1, channel)
+		dinic(item, item+1)
 	}
-	for i := 0; i < len(OriginNodeList); i++ {
-		<-channel
-	}
-	defer close(channel)
+	//for i := 0; i < len(OriginNodeList); i++ {
+	//	<-channel
+	//}
+	//defer close(channel)
 }
 
 //func MatchPlan2() {
