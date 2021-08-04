@@ -4,7 +4,6 @@ import (
 	"awesomeProject/global"
 	"awesomeProject/model"
 	"awesomeProject/utils"
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -145,7 +144,8 @@ func dfs(edges []model.Edge, head []int, deep []int, vis []bool, u int, t int, d
 }
 
 // dinic 计算最大流
-func dinic(u int, v int) int {
+func dinic(u int, v int, c chan int) int {
+
 	ans := 0
 	deep := make([]int, 2*global.Gragh.NodeNumber)
 	vis := make([]bool, 2*global.Gragh.NodeNumber)
@@ -162,6 +162,7 @@ func dinic(u int, v int) int {
 		}
 		qu = make([]int, 0)
 	}
+	c <- 1
 	return ans
 }
 
@@ -199,25 +200,30 @@ func Match(multiGraph [][]int, n int) {
 		superConvergeNode += 2
 		// 如果节点是学生+第几节课，连接上汇点
 	}
+	channal := make(chan int, len(OriginNodeList))
 	for _, item := range OriginNodeList {
-		go dinic(item, item+1)
+		go dinic(item, item+1, channal)
+	}
+	for i := 0; i < len(OriginNodeList); i++ {
+		<-channal
 	}
 }
-func MatchPlan2() {
-	superOriginNode := global.Gragh.NodeNumber
-	superConvergeNode := superOriginNode + 1
-	for i := 0; i < global.Gragh.NodeNumber; i++ {
-		if i < global.Gragh.NodeNumberOfStu {
-			addedge(superOriginNode, i, 1)
-			addedge(i, superOriginNode, 0)
-		} else {
-			addedge(i, superConvergeNode, 1)
-			addedge(superOriginNode, i, 0)
-		}
-	}
-	sum := dinic(superOriginNode, superConvergeNode)
-	fmt.Println(sum)
-}
+
+//func MatchPlan2() {
+//	superOriginNode := global.Gragh.NodeNumber
+//	superConvergeNode := superOriginNode + 1
+//	for i := 0; i < global.Gragh.NodeNumber; i++ {
+//		if i < global.Gragh.NodeNumberOfStu {
+//			addedge(superOriginNode, i, 1)
+//			addedge(i, superOriginNode, 0)
+//		} else {
+//			addedge(i, superConvergeNode, 1)
+//			addedge(superOriginNode, i, 0)
+//		}
+//	}
+//	sum := dinic(superOriginNode, superConvergeNode)
+//	fmt.Println(sum)
+//}
 
 type Pair struct {
 	First  int
