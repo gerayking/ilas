@@ -50,8 +50,8 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 				for _, t := range s.Teachers {
 					keyOfTeacher := strconv.Itoa(int(t))
 					keyOfTeacher += c
-					from := global.StuToIndex[keyOfStu]
-					to, ok := global.TeToIndex[keyOfTeacher]
+					to := global.StuToIndex[keyOfStu]
+					from, ok := global.TeToIndex[keyOfTeacher]
 					if ok {
 						edges = append(edges, model.Edge{W: 1, From: from, To: to, Next: head[from]})
 						head[from] = LenOfEdge
@@ -102,24 +102,24 @@ func Tarjan(n int) [][]int {
 }
 
 // dinic算法分层
-func bfs(edges []model.Edge, deep []int, head []int, s int, t int) int {
+func bfs(edges []model.Edge, deep []int, head []int, s int, t int,qu *[]int) int {
 	queue := utils.New()
-	queue.Push(0)
 	for queue.Len() != 0 {
 		queue.Pop()
 	}
+
 	deep[s] = 1
+
 	queue.Push(s)
 	for queue.Len() != 0 {
 		u := queue.Peek().(int)
+		*qu = append(*qu,u)
 		queue.Pop()
-		for i :=head[u] ; i!=-1;i=g.Edges[i].Next {
-			i = head[u]
+		for i :=head[u] ;i!=-1;i=g.Edges[i].Next {
 			if edges[i].W > 0 && deep[edges[i].To] == 0 {
 				deep[edges[i].To] = deep[edges[i].From] + 1
 				queue.Push(edges[i].To)
 			}
-			i = edges[i].Next
 		}
 	}
 	if deep[t] == 0 {
@@ -128,16 +128,20 @@ func bfs(edges []model.Edge, deep []int, head []int, s int, t int) int {
 	return 1
 }
 
+func min(a int ,b int)  int {
+	if a>b {
+		return b
+	}
+	return a
+}
 // 寻找增广路
-func dfs(edges []model.Edge, head []int, deep []int, u int, t int, dist int) int {
+func dfs(edges []model.Edge, head []int, deep []int,vis []bool, u int, t int, dist int) int {
 	if u == t {
 		return dist
 	}
-	i := 0
-	for i != -1 {
-		i = head[u]
+	for i:=head[u];i!=-1;i=g.Edges[i].Next {
 		if deep[edges[i].To] == deep[edges[i].From]+1 && edges[i].W != 0 {
-			di := dfs(edges, head, deep, edges[i].To, t, dist)
+			di := dfs(edges, head, deep, vis,edges[i].To, t, min(dist,edges[i].W))
 			if di > 0 {
 				edges[i].W -= di
 				edges[i^1].W += di
@@ -151,24 +155,33 @@ func dfs(edges []model.Edge, head []int, deep []int, u int, t int, dist int) int
 // dinic 计算最大流
 func dinic(u int, v int) int {
 	ans := 0
-	deep :=  make([]int,g.NodeNumber)
+	deep :=  make([]int,2*g.NodeNumber)
+	vis  :=make([]bool,2*g.NodeNumber)
 	// 对残流图不断进行分层
-	for bfs(g.Edges, deep, g.Head, u, v) != 0 {
+	qu := make([]int,0)
+	for bfs(g.Edges, deep, g.Head, u, v, &qu) != 0 {
 		// 分层后寻找增广路
-		minflow := dfs(g.Edges, g.Head, deep, u, v, inf)
+		minflow := dfs(g.Edges, g.Head, deep,vis, u, v, inf)
 		if minflow != 0 {
 			ans += minflow
 		}
+		for _,item := range qu{
+			deep[item] = 0
+		}
+		qu = make([]int,0)
 	}
 	return ans
 }
 
 func addedge(u int, v int,w int) {
 	g.Edges = append(g.Edges,model.Edge{W: w,From: u,To: v,Next: g.Head[u]})
+	g.Head[u]=g.EdgeNumber
 	g.EdgeNumber++
+
 }
 
 func Match(multiGraph [][]int, n int) {
+	global.InitNumberOfNOde = global.Gragh.NodeNumber
 	superOriginNode := n
 	superConvergeNode := superOriginNode + 1
 	OriginNodeList := []int{}
@@ -180,14 +193,16 @@ func Match(multiGraph [][]int, n int) {
 		for j:=0;j<len(multiGraph[i]);j++{
 			if multiGraph[i][j]< g.NodeNumberOfTeacher {
 				 u := multiGraph[i][j]
-				 addedge(u,superOriginNode,1)
-				 addedge(superOriginNode,u,0)
+				 //fmt.Printf("%d -> %d||\n",superOriginNode,u)
+				 addedge(superOriginNode,u,1)
+				 addedge(u,superOriginNode,0)
 			}else{
 				u := multiGraph[i][j]
 				addedge(u,superConvergeNode,1)
 				addedge(superConvergeNode,u,0)
 			}
 		}
+
 		OriginNodeList = append(OriginNodeList, superOriginNode)
 		g.NodeNumber+=2
 		superOriginNode += 2
@@ -195,7 +210,7 @@ func Match(multiGraph [][]int, n int) {
 		// 如果节点是学生+第几节课，连接上汇点
 	}
 	for _,item := range OriginNodeList{
-		dinic(item, item+1)
+		 dinic(item, item+1)
 	}
 }
 
@@ -207,14 +222,12 @@ type Pair struct {
 func OutputMatchInfo() []Pair {
 	MatchInfo := make([]Pair,0)
 	for u := 0; u < g.NodeNumberOfTeacher; u++ {
-		for v := g.Head[u]; v != -1; v = g.Edges[v].Next {
+		for i := g.Head[u]; i != -1; i = g.Edges[i].Next {
+			//v := g.Edges[i].To
 			// 如果边的源点是学生计划节点则不匹配
 			// 如果源点是老师放课节点且满流
-			if v >= g.NodeNumberOfTeacher{
-				continue
-			}
-			if g.Edges[v].W == 0 {
-				MatchInfo = append(MatchInfo, Pair{u,v})
+			if g.Edges[i].W == 0 && g.Edges[i].From < g.NodeNumberOfTeacher && g.Edges[i].To < global.InitNumberOfNOde{
+				MatchInfo = append(MatchInfo, Pair{g.Edges[i].From,g.Edges[i].To})
 			}
 		}
 	}

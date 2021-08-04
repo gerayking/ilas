@@ -38,8 +38,8 @@ func readPlan() {
 			SingularTable: true,
 		},
 	})
-	db.Find(&studentplan)
-	db.Find(&teacherplan)
+	db.Limit(500).Find(&studentplan)
+	db.Limit(500).Find(&teacherplan)
 
 }
 func str2List(s string) {
