@@ -4,22 +4,20 @@ import (
 	"awesomeProject/global"
 	"awesomeProject/model"
 	"awesomeProject/utils"
+	"fmt"
 	"strconv"
+	"strings"
 )
 
 const inf = 999999999
-
-var g = &model.Graph{}
-
-func Setg() {
-	g = global.Gragh
-}
 
 func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 	edges, head := make([]model.Edge, 0), make([]int, 0)
 	LenOfHead, LenOfEdge := 0, 0
 	for _, s := range stu {
 		key := strconv.Itoa(int(s.StuId))
+		global.StuToPlan[key] = s.Plans
+		global.StuToTe[key] = s.Teachers
 		for index, _ := range s.Plans {
 			k := key + "_" + strconv.Itoa(index)
 			global.StuToIndex[k] = LenOfHead
@@ -49,8 +47,8 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 				for _, t := range s.Teachers {
 					keyOfTeacher := strconv.Itoa(int(t))
 					keyOfTeacher += "_" + c
-					to := global.StuToIndex[keyOfStu]
-					from, ok := global.TeToIndex[keyOfTeacher]
+					from := global.StuToIndex[keyOfStu]
+					to, ok := global.TeToIndex[keyOfTeacher]
 					if ok {
 						edges = append(edges, model.Edge{W: 1, From: from, To: to, Next: head[from]})
 						head[from] = LenOfEdge
@@ -70,8 +68,8 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 func dfs_to(v int, sonGraph *[]int, vis []bool) {
 	vis[v] = true
 	*sonGraph = append(*sonGraph, v)
-	for i := g.Head[v]; i != -1; i = g.Edges[i].Next {
-		t := g.Edges[i].To
+	for i := global.Gragh.Head[v]; i != -1; i = global.Gragh.Edges[i].Next {
+		t := global.Gragh.Edges[i].To
 		if !vis[t] {
 			dfs_to(t, sonGraph, vis)
 		}
@@ -102,15 +100,13 @@ func bfs(edges []model.Edge, deep []int, head []int, s int, t int, qu *[]int) in
 	for queue.Len() != 0 {
 		queue.Pop()
 	}
-
 	deep[s] = 1
-
 	queue.Push(s)
 	for queue.Len() != 0 {
 		u := queue.Peek().(int)
 		*qu = append(*qu, u)
 		queue.Pop()
-		for i := head[u]; i != -1; i = g.Edges[i].Next {
+		for i := head[u]; i != -1; i = global.Gragh.Edges[i].Next {
 			if edges[i].W > 0 && deep[edges[i].To] == 0 {
 				deep[edges[i].To] = deep[edges[i].From] + 1
 				queue.Push(edges[i].To)
@@ -135,7 +131,7 @@ func dfs(edges []model.Edge, head []int, deep []int, vis []bool, u int, t int, d
 	if u == t {
 		return dist
 	}
-	for i := head[u]; i != -1; i = g.Edges[i].Next {
+	for i := head[u]; i != -1; i = global.Gragh.Edges[i].Next {
 		if deep[edges[i].To] == deep[edges[i].From]+1 && edges[i].W != 0 {
 			di := dfs(edges, head, deep, vis, edges[i].To, t, min(dist, edges[i].W))
 			if di > 0 {
@@ -151,13 +147,13 @@ func dfs(edges []model.Edge, head []int, deep []int, vis []bool, u int, t int, d
 // dinic 计算最大流
 func dinic(u int, v int) int {
 	ans := 0
-	deep := make([]int, 2*g.NodeNumber)
-	vis := make([]bool, 2*g.NodeNumber)
+	deep := make([]int, 2*global.Gragh.NodeNumber)
+	vis := make([]bool, 2*global.Gragh.NodeNumber)
 	// 对残流图不断进行分层
 	qu := make([]int, 0)
-	for bfs(g.Edges, deep, g.Head, u, v, &qu) != 0 {
+	for bfs(global.Gragh.Edges, deep, global.Gragh.Head, u, v, &qu) != 0 {
 		// 分层后寻找增广路
-		minflow := dfs(g.Edges, g.Head, deep, vis, u, v, inf)
+		minflow := dfs(global.Gragh.Edges, global.Gragh.Head, deep, vis, u, v, inf)
 		if minflow != 0 {
 			ans += minflow
 		}
@@ -170,10 +166,9 @@ func dinic(u int, v int) int {
 }
 
 func addedge(u int, v int, w int) {
-	g.Edges = append(g.Edges, model.Edge{W: w, From: u, To: v, Next: g.Head[u]})
-	g.Head[u] = g.EdgeNumber
-	g.EdgeNumber++
-
+	global.Gragh.Edges = append(global.Gragh.Edges, model.Edge{W: w, From: u, To: v, Next: global.Gragh.Head[u]})
+	global.Gragh.Head[u] = global.Gragh.EdgeNumber
+	global.Gragh.EdgeNumber++
 }
 
 func Match(multiGraph [][]int, n int) {
@@ -187,7 +182,7 @@ func Match(multiGraph [][]int, n int) {
 			continue
 		}
 		for j := 0; j < len(multiGraph[i]); j++ {
-			if multiGraph[i][j] < g.NodeNumberOfStu {
+			if multiGraph[i][j] < global.Gragh.NodeNumberOfStu {
 				u := multiGraph[i][j]
 				//fmt.Printf("%d -> %d||\n",superOriginNode,u)
 				addedge(superOriginNode, u, 1)
@@ -198,16 +193,30 @@ func Match(multiGraph [][]int, n int) {
 				addedge(superConvergeNode, u, 0)
 			}
 		}
-
 		OriginNodeList = append(OriginNodeList, superOriginNode)
-		g.NodeNumber += 2
+		global.Gragh.NodeNumber += 2
 		superOriginNode += 2
 		superConvergeNode += 2
 		// 如果节点是学生+第几节课，连接上汇点
 	}
-	for _,item := range OriginNodeList{
+	for _, item := range OriginNodeList {
 		go dinic(item, item+1)
 	}
+}
+func MatchPlan2() {
+	superOriginNode := global.Gragh.NodeNumber
+	superConvergeNode := superOriginNode + 1
+	for i := 0; i < global.Gragh.NodeNumber; i++ {
+		if i < global.Gragh.NodeNumberOfStu {
+			addedge(superOriginNode, i, 1)
+			addedge(i, superOriginNode, 0)
+		} else {
+			addedge(i, superConvergeNode, 1)
+			addedge(superOriginNode, i, 0)
+		}
+	}
+	sum := dinic(superOriginNode, superConvergeNode)
+	fmt.Println(sum)
 }
 
 type Pair struct {
@@ -215,17 +224,37 @@ type Pair struct {
 	Second int
 }
 
+func IsMatch(p *Pair) bool {
+	stu := strings.Split(global.IndexToStu[p.First], "_")
+	te := strings.Split(global.IndexToTe[p.Second], "_")
+	i, _ := strconv.ParseInt(stu[1], 0, 0)
+	flag := false
+	for _, plan := range global.StuToPlan[stu[0]][i].Class {
+		if strings.EqualFold(plan, te[1]) {
+			flag = true
+		}
+	}
+	if flag {
+		for _, teacher := range global.StuToTe[stu[0]] {
+			if strings.EqualFold(te[0], strconv.Itoa(int(teacher))) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func OutputMatchInfo() []Pair {
-	MatchInfo := make([]Pair,0)
-	global.InFirstMatch = make([]bool, g.InitNumberOfNOde)
-	for u := 0; u < g.NodeNumberOfStu; u++ {
-		for i := g.Head[u]; i != -1; i = g.Edges[i].Next {
+	MatchInfo := make([]Pair, 0)
+	global.InFirstMatch = make([]bool, global.Gragh.NodeNumber)
+	for u := 0; u < global.Gragh.NodeNumberOfStu; u++ {
+		for i := global.Gragh.Head[u]; i != -1; i = global.Gragh.Edges[i].Next {
 			// 如果边的源点是学生计划节点则不匹配
 			// 如果源点是老师放课节点且满流
-			if g.Edges[i].W == 0 && g.Edges[i].From < g.NodeNumberOfStu && g.Edges[i].To <g.InitNumberOfNOde{
-				MatchInfo = append(MatchInfo, Pair{g.Edges[i].From,g.Edges[i].To})
-				global.InFirstMatch[g.Edges[i].From] = true
-				global.InFirstMatch[g.Edges[i].To] = true
+			if global.Gragh.Edges[i].W == 0 && global.Gragh.Edges[i].From < global.Gragh.NodeNumberOfStu && global.Gragh.Edges[i].To < global.Gragh.InitNumberOfNOde {
+				MatchInfo = append(MatchInfo, Pair{global.Gragh.Edges[i].From, global.Gragh.Edges[i].To})
+				global.InFirstMatch[global.Gragh.Edges[i].From] = true
+				global.InFirstMatch[global.Gragh.Edges[i].To] = true
 			}
 		}
 	}

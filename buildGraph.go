@@ -38,8 +38,10 @@ func readPlan() {
 			SingularTable: true,
 		},
 	})
-	db.Limit(500).Find(&studentplan)
-	db.Limit(500).Find(&teacherplan)
+	db.Find(&studentplan)
+	db.Find(&teacherplan)
+	//db.Find(&studentplan)
+	//db.Find(&teacherplan)
 
 }
 func str2List(s string) {
@@ -47,6 +49,7 @@ func str2List(s string) {
 	for i := 0; i < len(res); i++ {
 		res[i] = strings.Replace(res[i], "'", "", -1)
 		res[i] = strings.Replace(res[i], " ", "", -1)
+		res[i] = strings.Replace(res[i], "]", "", -1)
 	}
 	Plan.Class = res
 	Student.Plans = append(Student.Plans, Plan)
