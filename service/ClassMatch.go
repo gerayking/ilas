@@ -21,7 +21,7 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 	for _, teacherSchedule := range teacher {
 		key := strconv.Itoa(int(teacherSchedule.TeacherId))
 		for _, index := range teacherSchedule.Schedule {
-			k := key + index
+			k := key + "_" + index
 			global.TeToIndex[k] = LenOfHead
 			global.IndexToTe[LenOfHead] = k
 			head = append(head, -1)
@@ -34,7 +34,7 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 	for _, s := range stu {
 		key := strconv.Itoa(int(s.StuId))
 		for index, _ := range s.Plans {
-			k := key + strconv.Itoa(index)
+			k := key + "_" + strconv.Itoa(index)
 			global.StuToIndex[k] = LenOfHead
 			global.IndexToStu[LenOfHead] = k
 			head = append(head, -1)
@@ -45,11 +45,11 @@ func CreateGraph(stu []model.Student, teacher []model.TeacherSchedule) {
 	for _, s := range stu {
 		key := strconv.Itoa(int(s.StuId))
 		for index, p := range s.Plans {
-			keyOfStu := key + strconv.Itoa(index)
+			keyOfStu := key + "_" + strconv.Itoa(index)
 			for _, c := range p.Class {
 				for _, t := range s.Teachers {
 					keyOfTeacher := strconv.Itoa(int(t))
-					keyOfTeacher += c
+					keyOfTeacher +=  "_" + c
 					to := global.StuToIndex[keyOfStu]
 					from, ok := global.TeToIndex[keyOfTeacher]
 					if ok {
