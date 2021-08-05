@@ -20,3 +20,8 @@ type TmpNode struct {
 	TeacherId string
 	LessonId  []int
 }
+
+type Pair struct {
+	First  int
+	Second int
+}

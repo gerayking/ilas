@@ -35,8 +35,8 @@ func readPlan() {
 			SingularTable: true,
 		},
 	})
-	db.Find(&studentplan)
-	db.Find(&teacherplan)
+	db.Limit(10000).Find(&studentplan)
+	db.Limit(10000).Find(&teacherplan)
 	//db.Find(&studentplan)
 	//db.Find(&teacherplan)
 }

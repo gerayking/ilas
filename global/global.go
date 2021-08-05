@@ -14,3 +14,4 @@ var ReceiveChanel = make(chan model.TeacherPlan)
 var RequestChanel = make(chan model.TeacherPlan)
 var RemainStudentPlan []model.Student
 var RemainTeacherPlan []model.TeacherPlan
+var IsMatchSchedule map[string]int

@@ -6,13 +6,12 @@ import (
 	"awesomeProject/utils"
 	"math"
 	"strconv"
-	"strings"
 	"sync"
 )
 
 const inf = 999999999
 
-var MatchI []Pair
+var MatchI []model.Pair
 
 func CreateGraph(stu []model.Student, teacher []model.TeacherPlan) {
 	edges, head := make([]model.Edge, 0), make([]int, 0)
@@ -160,7 +159,7 @@ func dinic(u int, v int, group *sync.WaitGroup) int {
 		deep = make([]int, 2*global.Gragh.NodeNumber)
 		qu = make([]int, 0)
 	}
-	//group.Done()
+	group.Done()
 	return ans
 }
 
@@ -196,20 +195,20 @@ func Match(multiGraph [][]int, n int) {
 	}
 	var wg sync.WaitGroup
 	for _, item := range OriginNodeList {
-		//wg.Add(1)
+		wg.Add(1)
 		dinic(item, item+1, &wg)
 	}
-	//wg.Wait()
+	wg.Wait()
 }
 
 func MatchPlan2(multiGraph [][]int, n int) {
-	MatchInfo := make([]Pair, 0)
+	MatchInfo := make([]model.Pair, 0)
 	superOriginNode := n
 	superConvergeNode := n + 1
 	for i := 0; i < len(multiGraph); i++ {
 		if len(multiGraph[i]) <= 2 {
 			if len(multiGraph[i]) == 2 {
-				MatchInfo = append(MatchInfo, Pair{First: multiGraph[i][0], Second: multiGraph[i][1]})
+				MatchInfo = append(MatchInfo, model.Pair{First: multiGraph[i][0], Second: multiGraph[i][1]})
 			} else {
 				continue
 			}
@@ -230,32 +229,7 @@ func MatchPlan2(multiGraph [][]int, n int) {
 	dinic(superOriginNode, superConvergeNode, &wg)
 }
 
-type Pair struct {
-	First  int
-	Second int
-}
-
-func IsMatch(p *Pair) bool {
-	stu := strings.Split(global.IndexToStu[p.First], "_")
-	te := strings.Split(global.IndexToTe[p.Second], "_")
-	i, _ := strconv.ParseInt(stu[1], 0, 0)
-	flag := false
-	for _, plan := range global.StuToPlan[stu[0]][i].Class {
-		if strings.EqualFold(plan, te[1]) {
-			flag = true
-		}
-	}
-	if flag {
-		for _, teacher := range global.StuToTe[stu[0]] {
-			if strings.EqualFold(te[0], strconv.Itoa(int(teacher))) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func OutputMatchInfo() []Pair {
+func OutputMatchInfo() []model.Pair {
 	MatchInfo := MatchI
 	global.InFirstMatch = make([]bool, global.Gragh.NodeNumber)
 	for u := 0; u < global.Gragh.NodeNumberOfStu; u++ {
@@ -263,7 +237,7 @@ func OutputMatchInfo() []Pair {
 			// 如果边的源点是学生计划节点则不匹配
 			// 如果源点是老师放课节点且满流
 			if global.Gragh.Edges[i].W == 0 && global.Gragh.Edges[i].From < global.Gragh.NodeNumberOfStu && global.Gragh.Edges[i].To < global.Gragh.InitNumberOfNOde {
-				MatchInfo = append(MatchInfo, Pair{global.Gragh.Edges[i].From, global.Gragh.Edges[i].To})
+				MatchInfo = append(MatchInfo, model.Pair{global.Gragh.Edges[i].From, global.Gragh.Edges[i].To})
 				global.InFirstMatch[global.Gragh.Edges[i].From] = true
 				global.InFirstMatch[global.Gragh.Edges[i].To] = true
 			}

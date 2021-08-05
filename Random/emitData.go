@@ -5,14 +5,14 @@ import (
 	"awesomeProject/model"
 	"awesomeProject/service"
 	"awesomeProject/utils"
+	"fmt"
 	"math/rand"
 	"sort"
 	"strconv"
 	"time"
 )
 
-func statics() ([]string, map[string]int, map[string]int) {
-	_, tp := service.CreateData()
+func GetTimeCount(tp []model.TeacherPlan) ([]string, map[string]int, map[string]int) {
 	TimeToIndex := make(map[string]int)
 	TimeCount := make(map[string]int)
 	count := 0
@@ -40,7 +40,7 @@ func statics() ([]string, map[string]int, map[string]int) {
 }
 
 func IsEmit(schedule string) bool {
-	_, _, k := statics()
+	k := global.IsMatchSchedule
 	rf := rand.Float32()
 	if k[schedule] < 200 {
 		return rf < 0.3
@@ -75,7 +75,7 @@ func StimulateTeacher(stu []model.Student) {
 		}
 	}
 }
-func EmitData(schedule string) {
+func EmitData() {
 	for true {
 		me := <-global.RequestChanel
 		for _, item := range me.Schedule {
@@ -85,32 +85,39 @@ func EmitData(schedule string) {
 		}
 	}
 }
-
-func ReMatch(teacherPlanList []model.TeacherPlan) {
+func ReMatch(teacherPlanList []model.TeacherPlan, c chan int) {
 	global.RemainTeacherPlan = append(global.RemainTeacherPlan, teacherPlanList...)
 	service.CreateGraph(global.RemainStudentPlan, global.RemainTeacherPlan)
 	sonGraph := service.Tarjan(global.Gragh.NodeNumber)
 	service.Match(sonGraph, global.Gragh.NodeNumber)
 	ans := service.OutputMatchInfo()
 	utils.TestifyAndOutpurData(ans)
+	global.RemainStudentPlan, global.RemainTeacherPlan = service.GetRemainGraph(ans)
+	c <- 1
 }
 
-/*
+/*i8
 定时， 2定量
 */
 func OnQuantityOrTimeMatch() {
 	planList := make([]model.TeacherPlan, 0)
-	timer1 := time.NewTimer(time.Second * 30)
+	timer1 := time.NewTimer(time.Second * 10)
 	go func(plan *[]model.TeacherPlan) {
 		<-timer1.C
-		ReMatch(planList)
+		fmt.Println("Time is able to Run")
+		ci := make(chan int)
+		ReMatch(planList, ci)
+		<-ci
 		planList = make([]model.TeacherPlan, 0)
 	}(&planList)
 	for true {
 		me := <-global.ReceiveChanel
 		planList = append(planList, me)
 		if len(planList) > 1000 {
-			ReMatch(planList)
+			fmt.Println("Quantity is able to Run")
+			ci := make(chan int)
+			ReMatch(planList, ci)
+			<-ci
 			planList = make([]model.TeacherPlan, 0)
 			timer1.Reset(time.Second * 30)
 		}

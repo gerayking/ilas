@@ -3,8 +3,9 @@ package utils
 import (
 	"awesomeProject/global"
 	"awesomeProject/model"
-	"awesomeProject/service"
 	"fmt"
+	"strconv"
+	"strings"
 )
 
 func Contains(s []int, e int) bool {
@@ -20,7 +21,26 @@ func Addedge(u int, v int, w int) {
 	global.Gragh.Head[u] = global.Gragh.EdgeNumber
 	global.Gragh.EdgeNumber++
 }
-func TestifyAndOutpurData(ans []service.Pair) {
+func IsMatch(p *model.Pair) bool {
+	stu := strings.Split(global.IndexToStu[p.First], "_")
+	te := strings.Split(global.IndexToTe[p.Second], "_")
+	i, _ := strconv.ParseInt(stu[1], 0, 0)
+	flag := false
+	for _, plan := range global.StuToPlan[stu[0]][i].Class {
+		if strings.EqualFold(plan, te[1]) {
+			flag = true
+		}
+	}
+	if flag {
+		for _, teacher := range global.StuToTe[stu[0]] {
+			if strings.EqualFold(te[0], strconv.Itoa(int(teacher))) {
+				return true
+			}
+		}
+	}
+	return false
+}
+func TestifyAndOutpurData(ans []model.Pair) {
 	trueNumber := 0
 	confilictNumber := 0
 	mps := make(map[string]int)
@@ -40,7 +60,7 @@ func TestifyAndOutpurData(ans []service.Pair) {
 		} else {
 			mpt[t] = 1
 		}
-		flag := service.IsMatch(&ans[i])
+		flag := IsMatch(&ans[i])
 		if flag {
 			trueNumber++
 		}

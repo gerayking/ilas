@@ -6,6 +6,7 @@ import (
 	"awesomeProject/utils"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 func RebuildGraph(stu []model.Student) {
@@ -55,4 +56,37 @@ func RebuildGraph(stu []model.Student) {
 		}
 		global.Gragh.NodeNumber++
 	}
+}
+
+func GetRemainGraph(ans []model.Pair) ([]model.Student, []model.TeacherPlan) {
+	for i := 0; i < len(ans); i++ {
+		u := ans[i].First
+		v := ans[i].Second
+		s := global.IndexToStu[u]
+		t := global.IndexToTe[v]
+		delete(global.IndexToStu, u)
+		delete(global.IndexToTe, v)
+		delete(global.StuToIndex, s)
+		delete(global.TeToIndex, t)
+	}
+	global.Gragh = &model.Graph{}
+	studentPlan := make([]model.Student, 0)
+	teacherPlan := make([]model.TeacherPlan, 0)
+	for _, item := range global.StuToIndex {
+		if global.InFirstMatch[item] == false {
+			Sid := global.IndexToStu[item]
+			ids := strings.Split(Sid, "_")[0]
+			id, _ := strconv.ParseInt(ids, 0, 0)
+			student := model.Student{StuId: uint(id), Plans: global.StuToPlan[ids], Teachers: global.StuToTe[ids]}
+			studentPlan = append(studentPlan, student)
+		}
+	}
+	for _, item := range global.TeToIndex {
+		if global.InFirstMatch[item] == false {
+			ts := strings.Split(global.IndexToTe[item], "_")
+			teacherId, _ := strconv.ParseInt(ts[0], 0, 0)
+			teacherPlan = append(teacherPlan, model.TeacherPlan{TeacherId: teacherId, Schedule: []string{ts[1]}})
+		}
+	}
+	return studentPlan, teacherPlan
 }

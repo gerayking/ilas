@@ -1,65 +1,52 @@
 package main
 
 import (
+	"awesomeProject/Random"
 	"awesomeProject/global"
 	"awesomeProject/model"
 	"awesomeProject/service"
-	"strconv"
-	"strings"
+	"awesomeProject/utils"
+	"fmt"
+	"time"
 )
 
-func FirstMatch(sp []model.Student, tp []model.TeacherPlan) []service.Pair {
+func PreRun(tp []model.TeacherPlan) {
+	_, _, global.IsMatchSchedule = Random.GetTimeCount(tp)
+	go Random.EmitData()
+	go Random.OnQuantityOrTimeMatch()
+}
+func FirstMatch(sp []model.Student, tp []model.TeacherPlan) []model.Pair {
 	service.CreateGraph(sp, tp)
 	sonGraph := service.Tarjan(global.Gragh.NodeNumber)
 	service.Match(sonGraph, global.Gragh.NodeNumber)
 	ans := service.OutputMatchInfo()
+	utils.TestifyAndOutpurData(ans)
 	return ans
 
 }
-func SecondMatch(sp []model.Student, tp []model.TeacherPlan) []service.Pair {
+func SecondMatch(sp []model.Student, tp []model.TeacherPlan) []model.Pair {
 	service.CreateGraph(sp, tp)
 	service.RebuildGraph(sp)
 	sonGraph := service.Tarjan(global.Gragh.NodeNumber)
 	service.Match(sonGraph, global.Gragh.NodeNumber)
+	ans := service.OutputMatchInfo()
+	utils.TestifyAndOutpurData(ans)
 	return service.OutputMatchInfo()
 }
-func getRemainGraph(ans []service.Pair) ([]model.Student, []model.TeacherPlan) {
-	for i := 0; i < len(ans); i++ {
-		u := ans[i].First
-		v := ans[i].Second
-		s := global.IndexToStu[u]
-		t := global.IndexToTe[v]
-		delete(global.IndexToStu, u)
-		delete(global.IndexToTe, v)
-		delete(global.StuToIndex, s)
-		delete(global.TeToIndex, t)
-	}
-	global.Gragh = &model.Graph{}
-	studentPlan := make([]model.Student, 0)
-	teacherPlan := make([]model.TeacherPlan, 0)
-	for _, item := range global.StuToIndex {
-		if global.InFirstMatch[item] == false {
-			Sid := global.IndexToStu[item]
-			id, _ := strconv.ParseInt(strings.Split(Sid, "_")[0], 0, 0)
-			student := model.Student{StuId: uint(id), Plans: global.StuToPlan[global.IndexToStu[item]], Teachers: global.StuToTe[global.IndexToStu[item]]}
-			studentPlan = append(studentPlan, student)
-		}
-	}
-	for _, item := range global.TeToIndex {
-		if global.InFirstMatch[item] == false {
-			ts := strings.Split(global.IndexToTe[item], "_")
-			teacherId, _ := strconv.ParseInt(ts[0], 0, 0)
-			teacherPlan = append(teacherPlan, model.TeacherPlan{TeacherId: teacherId, Schedule: []string{ts[1]}})
-		}
-	}
-	return studentPlan, teacherPlan
-}
 func main() {
-	//start := time.Now()
+	start := time.Now()
 	sp, tp := service.CreateData()
-	FirstMatch(sp, tp)
-	ans := SecondMatch(sp, tp)
-	global.RemainStudentPlan, global.RemainTeacherPlan = getRemainGraph(ans)
+	PreRun(tp) // 启动候补进程
+
+	FirstMatch(sp, tp) // 第一次匹配求出1000条可行边
+	end := time.Since(start)
+	fmt.Println(end)
+	start = time.Now()
+	ans := SecondMatch(sp, tp) // 第二次匹配求出最终值
+	end = time.Since(start)
+	fmt.Println(end)
+	global.RemainStudentPlan, global.RemainTeacherPlan = service.GetRemainGraph(ans)
+	Random.StimulateTeacher(sp) // 刺激放课
 	//end := time.Since(start)
 	//fmt.Println(end)
 	//testifyData(ans)
