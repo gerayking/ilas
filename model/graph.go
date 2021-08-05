@@ -16,11 +16,13 @@ type Graph struct {
 	InitNumberOfNOde int    // 未添加超级源点和超级汇点前的节点数量
 }
 
+// 临时节点，用于重新建图
 type TmpNode struct {
 	TeacherId string
 	LessonId  []int
 }
 
+// 用于存储匹配信息
 type Pair struct {
 	First  int
 	Second int

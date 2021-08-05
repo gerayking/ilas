@@ -13,6 +13,7 @@ const inf = 999999999
 
 var MatchI []model.Pair
 
+// 对处理出来的信息进行建图
 func CreateGraph(stu []model.Student, teacher []model.TeacherPlan) {
 	edges, head := make([]model.Edge, 0), make([]int, 0)
 	LenOfHead, LenOfEdge := 0, 0
@@ -143,7 +144,8 @@ func dfs(edges []model.Edge, head []int, deep []int, vis []bool, u int, t int, d
 	return 0
 }
 
-// dinic 计算最大流
+// dinic 计算最大流，
+// u,v 原点与汇点
 func dinic(u int, v int, group *sync.WaitGroup) int {
 	ans := 0
 	deep := make([]int, 2*global.Gragh.NodeNumber)
@@ -163,6 +165,7 @@ func dinic(u int, v int, group *sync.WaitGroup) int {
 	return ans
 }
 
+// 进行图拆分，然后再匹配
 func Match(multiGraph [][]int, n int) {
 	Max := 0
 	global.Gragh.InitNumberOfNOde = global.Gragh.NodeNumber
@@ -201,6 +204,7 @@ func Match(multiGraph [][]int, n int) {
 	wg.Wait()
 }
 
+// 不拆图的暴力匹配
 func MatchPlan2(multiGraph [][]int, n int) {
 	MatchInfo := make([]model.Pair, 0)
 	superOriginNode := n
@@ -229,6 +233,7 @@ func MatchPlan2(multiGraph [][]int, n int) {
 	dinic(superOriginNode, superConvergeNode, &wg)
 }
 
+// 获取匹配结果
 func OutputMatchInfo() []model.Pair {
 	MatchInfo := MatchI
 	global.InFirstMatch = make([]bool, global.Gragh.NodeNumber)

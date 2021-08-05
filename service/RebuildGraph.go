@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// 添加1000条边后重新建图
 func RebuildGraph(stu []model.Student) {
 	for _, s := range stu {
 		key := strconv.Itoa(int(s.StuId))
@@ -58,6 +59,7 @@ func RebuildGraph(stu []model.Student) {
 	}
 }
 
+// 获取匹配后的残留图
 func GetRemainGraph(ans []model.Pair) ([]model.Student, []model.TeacherPlan) {
 	for i := 0; i < len(ans); i++ {
 		u := ans[i].First

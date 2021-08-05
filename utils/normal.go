@@ -16,11 +16,15 @@ func Contains(s []int, e int) bool {
 	}
 	return false
 }
+
+// 临接表进行图加边
 func Addedge(u int, v int, w int) {
 	global.Gragh.Edges = append(global.Gragh.Edges, model.Edge{W: w, From: u, To: v, Next: global.Gragh.Head[u]})
 	global.Gragh.Head[u] = global.Gragh.EdgeNumber
 	global.Gragh.EdgeNumber++
 }
+
+// 测试匹配是否正确
 func IsMatch(p *model.Pair) bool {
 	stu := strings.Split(global.IndexToStu[p.First], "_")
 	te := strings.Split(global.IndexToTe[p.Second], "_")
@@ -40,6 +44,8 @@ func IsMatch(p *model.Pair) bool {
 	}
 	return false
 }
+
+// 测试匹配结果的正确率以及正确性
 func TestifyAndOutpurData(ans []model.Pair) {
 	trueNumber := 0
 	confilictNumber := 0

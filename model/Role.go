@@ -1,5 +1,6 @@
 package model
 
+// 与数据库表信息一一对应
 import (
 	"gorm.io/gorm"
 	"time"

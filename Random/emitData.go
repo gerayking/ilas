@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// 获取表的统计信息，用来后面进行加权判断刺激成功概率
 func GetTimeCount(tp []model.TeacherPlan) ([]string, map[string]int, map[string]int) {
 	TimeToIndex := make(map[string]int)
 	TimeCount := make(map[string]int)
@@ -39,6 +40,7 @@ func GetTimeCount(tp []model.TeacherPlan) ([]string, map[string]int, map[string]
 	return IndexToTime, TimeToIndex, TimeCount
 }
 
+// 判断该条刺激是否发出
 func IsEmit(schedule string) bool {
 	k := global.IsMatchSchedule
 	rf := rand.Float32()
@@ -54,6 +56,8 @@ func IsEmit(schedule string) bool {
 		return rf < 0.7
 	}
 }
+
+// 刺激老师放课
 func StimulateTeacher(stu []model.Student) {
 	for _, s := range stu {
 		key := strconv.Itoa(int(s.StuId))
@@ -75,6 +79,8 @@ func StimulateTeacher(stu []model.Student) {
 		}
 	}
 }
+
+// 刺激数据
 func EmitData() {
 	for true {
 		me := <-global.RequestChanel
@@ -85,6 +91,8 @@ func EmitData() {
 		}
 	}
 }
+
+// 对残留图和新加的节点进行再度匹配
 func ReMatch(teacherPlanList []model.TeacherPlan, c chan int) {
 	global.RemainTeacherPlan = append(global.RemainTeacherPlan, teacherPlanList...)
 	service.CreateGraph(global.RemainStudentPlan, global.RemainTeacherPlan)
@@ -99,6 +107,8 @@ func ReMatch(teacherPlanList []model.TeacherPlan, c chan int) {
 /*i8
 定时， 2定量
 */
+
+// 采用定时和定量的策略进行候补匹配
 func OnQuantityOrTimeMatch() {
 	planList := make([]model.TeacherPlan, 0)
 	timer1 := time.NewTimer(time.Second * 10)
