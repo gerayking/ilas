@@ -16,3 +16,4 @@ var RequestChanel = make(chan model.TeacherPlan) // 用于候补缓解的模拟
 var RemainStudentPlan []model.Student            // 残留学生计划
 var RemainTeacherPlan []model.TeacherPlan        // 残留老师计划
 var IsMatchSchedule map[string]int               // 是否匹配
+var MatchingFlag chan int

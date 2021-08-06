@@ -107,29 +107,36 @@ func ReMatch(teacherPlanList []model.TeacherPlan, c chan int) {
 /*i8
 定时， 2定量
 */
+func OnTimeMatch() {
+	timer1 := time.NewTimer(time.Second * 10)
+	planList := make([]model.TeacherPlan, 0)
+	go func(plan *[]model.TeacherPlan) {
+		me := <-global.ReceiveChanel
+		planList = append(planList, me)
+	}(&planList)
+	for true {
+		<-timer1.C
+		fmt.Println("Time is able to Run")x
+		ci := make(chan int)
+		go ReMatch(planList, ci)
+		<-ci
+		planList = make([]model.TeacherPlan, 0)
+		timer1 = time.NewTimer(time.Second * 10)
+	}
+}
 
 // 采用定时和定量的策略进行候补匹配
 func OnQuantityOrTimeMatch() {
 	planList := make([]model.TeacherPlan, 0)
-	timer1 := time.NewTimer(time.Second * 10)
-	go func(plan *[]model.TeacherPlan) {
-		<-timer1.C
-		fmt.Println("Time is able to Run")
-		ci := make(chan int)
-		ReMatch(planList, ci)
-		<-ci
-		planList = make([]model.TeacherPlan, 0)
-	}(&planList)
 	for true {
 		me := <-global.ReceiveChanel
 		planList = append(planList, me)
-		if len(planList) > 1000 {
+		if len(planList) > 10000 {
 			fmt.Println("Quantity is able to Run")
 			ci := make(chan int)
-			ReMatch(planList, ci)
+			go ReMatch(planList, ci)
 			<-ci
 			planList = make([]model.TeacherPlan, 0)
-			timer1.Reset(time.Second * 30)
 		}
 	}
 }
